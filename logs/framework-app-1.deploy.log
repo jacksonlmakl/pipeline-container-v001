@@ -1,0 +1,73 @@
+🔍 Cannot connect to Docker daemon
+🐳 Detected Docker-in-Docker environment
+🔍 Docker socket exists but cannot connect
+⚠️ Attempting to fix socket permissions...
+❌ Still cannot connect to Docker daemon
+⚠️ The socket might be mounted but not accessible.
+🔄 Starting Docker daemon inside the container (true DinD)...
+🚀 Starting Docker daemon inside the container...
+⏳ Waiting for Docker daemon to start.. ✅
+✅ Docker daemon is now running
+📝 Creating Dockerfile with scheduling support...
+🔨 Building Docker image: framework:latest
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.21kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:22.04
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM docker.io/library/ubuntu:22.04@sha256:ed1544e454989078f5dec1bfdabd8c5cc9c48e0705d07b678ab6ae3fb61952d2
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 68.60MB 4.0s
+#5 transferring context: 70.16MB 9.1s
+#5 transferring context: 70.64MB 10.5s done
+#5 DONE 11.7s
+
+#6 [ 2/11] RUN apt-get update &&     apt-get install -y --no-install-recommends python3 python3-pip wget curl jq cron &&     ln -s /usr/bin/python3 /usr/bin/python &&     pip3 install --upgrade pip
+#6 CACHED
+
+#7 [ 3/11] RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+#7 CACHED
+
+#8 [ 4/11] RUN pip install yq
+#8 CACHED
+
+#9 [ 5/11] WORKDIR /app
+#9 CACHED
+
+#10 [ 6/11] COPY module/requirements.txt .
+#10 CACHED
+
+#11 [ 7/11] RUN pip install --no-cache-dir -r requirements.txt
+#11 CACHED
+
+#12 [ 8/11] COPY . .
+#12 DONE 71.3s
+
+#13 [ 9/11] RUN chmod +x ./bin/run
+#13 DONE 6.2s
+
+#14 [10/11] RUN echo '#!/bin/bash\ncd /app && ./bin/run --run >> /app/cron.log 2>&1\n' > /app/run_scheduled.sh && chmod +x /app/run_scheduled.sh
+#14 DONE 7.1s
+
+#15 [11/11] RUN echo "#!/bin/bash" > /app/entrypoint.sh &&     echo "# Exit on error" >> /app/entrypoint.sh &&     echo "set -e" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "# Set noninteractive mode for debconf" >> /app/entrypoint.sh &&     echo "export DEBIAN_FRONTEND=noninteractive" >> /app/entrypoint.sh &&     echo "export DEBCONF_NONINTERACTIVE_SEEN=true" >> /app/entrypoint.sh &&     echo "export DEBCONF_NOWARNINGS="yes"" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "echo "🚀 Setting up container..."" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "# Ensure the container is running with correct permissions" >> /app/entrypoint.sh &&     echo "if [[ "$EUID" -ne 0 ]]; then" >> /app/entrypoint.sh &&     echo "  echo "❌ Error: This script must be run as root."" >> /app/entrypoint.sh &&     echo "  exit 1" >> /app/entrypoint.sh &&     echo "fi" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "# Create cron job from controller.yaml (if exists)" >> /app/entrypoint.sh &&     echo "if command -v yq &> /dev/null && [ -f "/app/controller.yaml" ]; then" >> /app/entrypoint.sh &&     echo "  SCHEDULE=$(yq -r ".schedule" "/app/controller.yaml" 2>/dev/null || echo "")" >> /app/entrypoint.sh &&     echo "  if [ ! -z "$SCHEDULE" ]; then" >> /app/entrypoint.sh &&     echo "    echo "📅 Found schedule in controller.yaml: $SCHEDULE"" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "    echo "$SCHEDULE /app/run_scheduled.sh" > /etc/cron.d/framework-cron" >> /app/entrypoint.sh &&     echo "    chmod 0644 /etc/cron.d/framework-cron" >> /app/entrypoint.sh &&     echo "    crontab /etc/cron.d/framework-cron" >> /app/entrypoint.sh &&     echo "    echo "✅ Cron job installed"" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "    # Start cron manually using init.d script (works in containers)" >> /app/entrypoint.sh &&     echo "    /etc/init.d/cron start 2>/dev/null || cron 2>/dev/null || true" >> /app/entrypoint.sh &&     echo "    echo "✅ Cron service started"" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "    # Run once immediately" >> /app/entrypoint.sh &&     echo "    echo "🚀 Running initial execution..."" >> /app/entrypoint.sh &&     echo "    /app/run_scheduled.sh" >> /app/entrypoint.sh &&     echo "" >> /app/entrypoint.sh &&     echo "    # Keep container running" >> /app/entrypoint.sh &&     echo "    echo "🔄 Container will remain running for scheduled executions"" >> /app/entrypoint.sh &&     echo "    touch /app/cron.log" >> /app/entrypoint.sh &&     echo "    tail -f /app/cron.log" >> /app/entrypoint.sh &&     echo "  else" >> /app/entrypoint.sh &&     echo "    echo "⚠️ No schedule found in controller.yaml, container will remain idle"" >> /app/entrypoint.sh &&     echo "    echo "⏸️ No tasks will be executed"" >> /app/entrypoint.sh &&     echo "    # Keep container running but idle" >> /app/entrypoint.sh &&     echo "    touch /app/idle.log" >> /app/entrypoint.sh &&     echo "    echo "⏳ Container started in idle mode at $(date)" >> /app/idle.log" >> /app/entrypoint.sh &&     echo "    tail -f /app/idle.log" >> /app/entrypoint.sh &&     echo "  fi" >> /app/entrypoint.sh &&     echo "else" >> /app/entrypoint.sh &&     echo "  echo "⚠️ No schedule found in controller.yaml, container will remain idle"" >> /app/entrypoint.sh &&     echo "  echo "⏸️ No tasks will be executed"" >> /app/entrypoint.sh &&     echo "  # Keep container running but idle" >> /app/entrypoint.sh &&     echo "  touch /app/idle.log" >> /app/entrypoint.sh &&     echo "  echo "⏳ Container started in idle mode at $(date)" >> /app/idle.log" >> /app/entrypoint.sh &&     echo "  tail -f /app/idle.log" >> /app/entrypoint.sh &&     echo "fi" >> /app/entrypoint.sh &&     chmod +x /app/entrypoint.sh
+#15 DONE 7.4s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 9.0s done
+#16 writing image sha256:553f3b0d3aecba5df894410678111477bf6d2dbd7e1d4c8ed9f2b137ae0ba2fa done
+#16 naming to docker.io/library/framework:latest done
+#16 DONE 9.1s
+✅ Docker image built successfully!
+🔄 Stopping and removing existing container...
+framework-scheduler
