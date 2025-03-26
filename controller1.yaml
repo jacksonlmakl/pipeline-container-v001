@@ -1,5 +1,11 @@
-schedule: ""
+schedule: '* * * * *'
 s3:
-  - name: ""
-  - access_key: ""
-  - secret_key: ""
+  - name: ''
+  - access_key: ''
+  - secret_key: ''
+steps:
+  - name: Step1
+    execute: step1_2.py
+  - name: Step 2
+    execute: step_2.sql
+    database: raw
